@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frog Cam</title>
+</head>
+<body>
+    <div class="jumbotron text-center" style="margin-bottom:0;padding-top:5em;">
+        <h1>Pet Tracker</h1>
+        <p>Motion detecting for stationary pets</p>
+        <p>Developed by Sam Shi</p>
+    </div>
+    <div class="text-center">
+        <button id="start" onclick="start()">Start</button>
+    </div>
+    <div class="container" id="imagedisplay" style="display:none; margin-top: 3em;">
+        <div class="row">
+            <div class="col-sm">
+                <h2>Video Stream</h2>
+                <span id="box" style="width:30px; height:30px; position: absolute; top:50%; left:50%; border:2px solid black; display: none;"></span>
+                <video autoplay="true" id="videoElement" style="width: 500px; height: 500px; transform: rotateY(180deg); z-index: 0"></video>
+                <button id="whatcolor" onclick="find()" style="display:none;">What Color?</button>
+            </div>
+            <div class="col-sm">
+                <h2>Motioned Image</h2>
+                <canvas id="canvas1" style="z-index: 2; width: 100%; height:auto;"></canvas>
+            </div>
+        </div>
+    
+    </div>
+
+        
+    
+</body>
+
+<!-- <script src="brython.js"></script>
+<script src="brython_stdlib.js"></script> -->
+
+<script>
+    
+
+    var canvas1 = document.getElementById("canvas1")
+    var imagedisplay = document.getElementById("imagedisplay")
+    var context1 = canvas1.getContext('2d');
+    function start() {
+        var constraints = {
+        audio: false,
+        video: { width: 200, height: 200 }
+        };
+        navigator.mediaDevices.getUserMedia(constraints)
+        .then(success)
+        .catch(error);
+    }
+    function success(stream) {
+        var video = document.getElementById('videoElement');
+        video.srcObject = stream;
+        imagedisplay.style.display = "block";
+        setInterval(capture,200);
+    }
+
+    function error(error) {
+    console.log(error);
+    }
+
+    var video = document.getElementById('videoElement');
+
+    var canvas = document.createElement('canvas');
+    canvas.width = 200;
+    canvas.height = 200;
+    canvas.style.border = "solid 2px black"
+    canvas.style.zIndex = "1"
+    var context = canvas.getContext('2d');
+    
+
+    // var twitteraccess = "1363255090925211648-5T3rwb4xUsFllTURbZ0qrPaJFTnHCE"
+    // var twittersecret = "OzVuPinp3xCNDqLEdWxFqQn0xK0bPaEc0Odfy1EKIxVTA"
+    // OAuth.initialize("");
+
+    function capture() {
+        context.drawImage(video, 0, 0, 200, 200);
+        var imagedata1 = context.getImageData(0,0,200,200);
+        context.globalCompositeOperation = 'difference';
+        var imagedata = context.getImageData(0,0,200,200)
+        var imagescore = 0;
+        // var colorscore = [0,0,0];
+        for(var i = 0; i < imagedata.data.length; i+=4) {
+            imagedata.data[i] = 0;
+            imagedata.data[i+1] = imagedata.data[i+1]*3;
+            imagedata.data[i+2] = 0;
+            var r = imagedata.data[i]/3;
+            var g = imagedata.data[i+1]/3;
+            var b = imagedata.data[i+2]/3;
+            // imagedata.data[i]=0;
+            // imagedata.data[i+2]=0;
+            var pixelscore = r+g+b;
+
+            if(pixelscore > 60) {
+                imagescore++;
+            }
+        }
+        
+        if(imagescore > 12000) {
+            console.log("MOTION");
+            // twitter api integration here
+            // setTimeout(()=>{
+            //     var dataURL = canvas.toDataURL();
+            //     var file = dataURItoBlob(dataURL);
+            //     OAuth.popup("twitter").then(function(result) {
+            //         var data = new FormData();
+            //         data.append('status', "Frog movement!");
+            //         // Binary image
+            //         data.append('media[]', file, 'frog.png');
+            //         // Post to Twitter as an update with media
+            //         return result.post('/1.1/statuses/update_with_media.json', {
+            //             data: data,
+            //             cache: false,
+            //             processData: false,
+            //             contentType: false
+            //         });
+            //     })
+            // }, 10000)
+            context1.putImageData(imagedata1,0,0);
+        }
+        
+        
+        // console.log("pixelscore: " + pixelscore)
+        console.log("imagescore: " + imagescore);
+
+    }
+
+        // colorscore[0] = colorscore[0]/(imagedata.data.length/4)
+        // colorscore[1] = colorscore[1]/(imagedata.data.length/4)
+        // colorscore[2] = colorscore[2]/(imagedata.data.length/4)
+
+        // var r = document.getElementById("r")
+        // var g = document.getElementById("g")
+        // var b = document.getElementById("b")
+
+        // var color = document.getElementById("color")
+        // color.style.backgroundColor = `rgb(${colorscore[0]},${colorscore[1]},${colorscore[2]})`
+        // r.innerHTML = colorscore[0]
+        // g.innerHTML = colorscore[1]
+        // b.innerHTML = colorscore[2]
+        // console.log(imagedata.data)
+        // console.log(color.style.backgroundColor)
+    
+</script>
+
+</html>
